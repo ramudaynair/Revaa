@@ -17,14 +17,10 @@ export default function LiveStats({ userId, onStatsUpdate }: LiveStatsProps) {
       setStats(newStats)
       onStatsUpdate?.(newStats)
     }
-
-    // Initial load
     updateStats()
 
-    // Set up interval for live updates
-    const interval = setInterval(updateStats, 1000) // Update every second
+    const interval = setInterval(updateStats, 1000) 
 
-    // Listen for storage changes (for cross-tab updates)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "revaa_activities") {
         updateStats()

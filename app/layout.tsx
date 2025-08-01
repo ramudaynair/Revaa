@@ -4,9 +4,9 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'Revaa',
+  description: 'A Health Care Web-App',
+  generator: 'Nexum',
 }
 
 export default function RootLayout({
@@ -16,6 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <head>
+        <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+      </head>
       <body className={GeistSans.className}>{children}</body>
     </html>
   )

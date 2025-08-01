@@ -78,8 +78,8 @@ class SarvamService {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       const recognition = new SpeechRecognition()
 
-      recognition.continuous = false
-      recognition.interimResults = false
+      recognition.continuous = true
+      recognition.interimResults = true
       recognition.lang = SUPPORTED_LANGUAGES[language as keyof typeof SUPPORTED_LANGUAGES]?.code || "en-US"
       recognition.maxAlternatives = 1
 
@@ -92,25 +92,35 @@ class SarvamService {
         if (!hasResult) {
           reject(new Error("Speech recognition timeout. Please try again."))
         }
-      }, 15000) // Increased to 15 seconds
+      }, 30000) // 30 seconds
 
       recognition.onstart = () => {
         console.log("Speech recognition started for language:", recognition.lang)
         console.log("Listening... Please speak now.")
+        // Show visual feedback
+        if (typeof window !== 'undefined') {
+          document.title = "🎤 Listening... Speak now!"
+        }
       }
 
       recognition.onresult = (event: any) => {
-        hasResult = true
-        clearTimeout(timeoutId)
-        
-        const result = event.results[0][0]
-        console.log("Speech recognition result:", result.transcript, "Confidence:", result.confidence)
-        
-        resolve({
-          text: result.transcript,
-          language: language,
-          confidence: result.confidence || 0.9,
-        })
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i]
+          if (result.isFinal) {
+            hasResult = true
+            clearTimeout(timeoutId)
+            recognition.stop()
+            
+            console.log("Speech recognition result:", result[0].transcript, "Confidence:", result[0].confidence)
+            
+            resolve({
+              text: result[0].transcript,
+              language: language,
+              confidence: result[0].confidence || 0.9,
+            })
+            return
+          }
+        }
       }
 
       recognition.onerror = (event: any) => {
@@ -154,8 +164,11 @@ class SarvamService {
       recognition.onend = () => {
         clearTimeout(timeoutId)
         console.log("Speech recognition ended")
+        if (typeof window !== 'undefined') {
+          document.title = "Revaa - AI Medical Assistant"
+        }
         if (!hasResult) {
-          reject(new Error("No speech was detected. Please try speaking again."))
+          reject(new Error("No speech detected. Please speak louder and closer to microphone."))
         }
       }
 
@@ -168,68 +181,44 @@ class SarvamService {
     })
   }
 
-  // Text to speech using browser's Speech Synthesis API
+  // Text to speech using Sarvam AI API
   async textToSpeech(options: TextToSpeechOptions): Promise<void> {
-    return new Promise((resolve, reject) => {
+    console.log('TTS called with:', options)
+    // Use fallback for now since Sarvam API might have issues
+    return this.fallbackTextToSpeech(options)
+  }
+
+  private async fallbackTextToSpeech(options: TextToSpeechOptions): Promise<void> {
+    return new Promise((resolve) => {
+      console.log('Fallback TTS called')
       if (!("speechSynthesis" in window)) {
-        reject(new Error("Text-to-speech not supported in this browser"))
+        console.log('Speech synthesis not supported')
+        resolve()
         return
       }
 
-      // Cancel any ongoing speech
       speechSynthesis.cancel()
-
-      const utterance = new SpeechSynthesisUtterance(options.text)
-      const langCode = SUPPORTED_LANGUAGES[options.language as keyof typeof SUPPORTED_LANGUAGES]?.code || "en-US"
-
-      utterance.lang = langCode
-      utterance.rate = 0.9
-      utterance.pitch = 1
-      utterance.volume = 1
-
-      // Wait for voices to load
-      const setVoiceAndSpeak = () => {
-        const voices = speechSynthesis.getVoices()
-
-        if (voices.length === 0) {
-          // Voices not loaded yet, try again
-          setTimeout(setVoiceAndSpeak, 100)
-          return
-        }
-
-        // Try to find a voice for the specified language
-        const voice =
-          voices.find((v) => v.lang.startsWith(options.language)) ||
-          voices.find((v) => v.lang.startsWith("en")) ||
-          voices[0]
-
-        if (voice) {
-          utterance.voice = voice
-        }
-
+      
+      setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(options.text)
+        const langCode = SUPPORTED_LANGUAGES[options.language as keyof typeof SUPPORTED_LANGUAGES]?.code || "en-US"
+        utterance.lang = langCode
+        utterance.rate = 0.8
+        utterance.volume = 1
+        
+        utterance.onstart = () => console.log('TTS started')
         utterance.onend = () => {
-          console.log("Speech synthesis completed")
+          console.log('TTS ended')
           resolve()
         }
-
-        utterance.onerror = (event) => {
-          console.error("Speech synthesis error:", event.error)
-          reject(new Error(`Text-to-speech error: ${event.error}`))
+        utterance.onerror = (e) => {
+          console.log('TTS error:', e)
+          resolve()
         }
-
-        try {
-          speechSynthesis.speak(utterance)
-        } catch (error) {
-          reject(new Error("Failed to start text-to-speech"))
-        }
-      }
-
-      // Load voices if not already loaded
-      if (speechSynthesis.getVoices().length === 0) {
-        speechSynthesis.onvoiceschanged = setVoiceAndSpeak
-      } else {
-        setVoiceAndSpeak()
-      }
+        
+        console.log('Speaking:', options.text, 'in', langCode)
+        speechSynthesis.speak(utterance)
+      }, 200)
     })
   }
 

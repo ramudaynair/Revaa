@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -25,6 +25,13 @@ export default function AuthPage() {
   })
   const [error, setError] = useState("")
   const router = useRouter()
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      router.push("/dashboard")
+    }
+  }, [router])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({

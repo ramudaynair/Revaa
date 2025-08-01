@@ -122,6 +122,9 @@ class AuthService {
 
       localStorage.setItem(TOKEN_KEY, token)
       localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userWithoutPassword))
+      
+      // Also set cookie for middleware
+      document.cookie = `auth-token=${token}; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`
 
       return {
         success: true,
@@ -166,6 +169,9 @@ class AuthService {
 
       localStorage.setItem(TOKEN_KEY, token)
       localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userWithoutPassword))
+      
+      // Also set cookie for middleware
+      document.cookie = `auth-token=${token}; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`
 
       return {
         success: true,
@@ -244,6 +250,9 @@ class AuthService {
 
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(CURRENT_USER_KEY)
+    
+    // Also remove cookie
+    document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
   }
 
   // Get current user

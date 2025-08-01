@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { MessageCircle, ArrowLeft, Send, Bot, User, Loader2 } from "lucide-react"
+import { MessageCircle, ArrowLeft, Send, Bot, User, Loader2, Volume2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { authService, type User as UserType } from "@/lib/auth-service"
@@ -16,6 +16,7 @@ import LanguageSelector from "@/components/language-selector"
 import { activityService } from "@/lib/activity-service"
 import SubtleParticlesBackground from "@/components/subtle-particles-background"
 import PermissionCheck from "@/components/permission-check"
+import { sarvamService } from "@/lib/sarvam-api"
 
 interface Message {
   id: string
@@ -186,6 +187,43 @@ export default function ChatbotPage() {
     // Handle speech feedback if needed
   }
 
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  
+  const speakBotResponse = (text: string) => {
+    if (isSpeaking) return
+    setIsSpeaking(true)
+    
+    window.speechSynthesis.cancel()
+    
+    const speak = () => {
+      const utterance = new SpeechSynthesisUtterance(text)
+      
+      // Use Google voices which are better for Indian languages
+      const voices = window.speechSynthesis.getVoices()
+      const googleVoice = voices.find(v => 
+        v.name.includes('Google') && 
+        (v.lang.includes('ml') || v.lang.includes('hi') || v.lang.includes('en'))
+      )
+      
+      if (googleVoice) {
+        utterance.voice = googleVoice
+      } else {
+        utterance.lang = selectedLanguage === 'ml' ? 'hi-IN' : selectedLanguage === 'hi' ? 'hi-IN' : 'en-US'
+      }
+      
+      utterance.rate = 0.7
+      utterance.pitch = 1
+      utterance.volume = 1
+      
+      utterance.onend = () => setIsSpeaking(false)
+      utterance.onerror = () => setIsSpeaking(false)
+      
+      window.speechSynthesis.speak(utterance)
+    }
+    
+    setTimeout(speak, 200)
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
@@ -263,11 +301,24 @@ export default function ChatbotPage() {
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-xs text-gray-400">{message.timestamp.toLocaleTimeString()}</span>
-                    {message.language && message.language !== "en" && (
-                      <Badge className="text-xs bg-purple-500/20 text-purple-400 border-purple-500/30">
-                        {message.language.toUpperCase()}
-                      </Badge>
-                    )}
+                    <div className="flex items-center space-x-2">
+                      {message.sender === "bot" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => speakBotResponse(message.content)}
+                          className="h-6 w-6 p-0 text-gray-400 hover:text-green-400"
+                          title="Listen to response"
+                        >
+                          <Volume2 className="w-3 h-3" />
+                        </Button>
+                      )}
+                      {message.language && message.language !== "en" && (
+                        <Badge className="text-xs bg-purple-500/20 text-purple-400 border-purple-500/30">
+                          {message.language.toUpperCase()}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -313,6 +364,7 @@ export default function ChatbotPage() {
                   onSpeech={handleSpeech}
                   language={selectedLanguage}
                   disabled={isLoading}
+                  speakText={speakBotResponse}
                 />
                 <span className="text-xs text-gray-400">
                   Speak in any language, get responses in {selectedLanguage.toUpperCase()}

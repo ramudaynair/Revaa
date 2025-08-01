@@ -41,13 +41,13 @@ export default function HomePage() {
               </div>
               <span className="text-xl font-bold text-white">Revaa</span>
             </div>
-            <Link href={isAuthenticated ? "/dashboard" : "/auth"}>
+            <Link href="/dashboard">
               <Button
                 variant="outline"
                 className="relative group border-green-500/50 text-green-400 hover:bg-green-500/10 bg-transparent backdrop-blur-sm overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <span className="relative">{isAuthenticated ? "Dashboard" : "Sign In"}</span>
+                <span className="relative">Dashboard</span>
               </Button>
             </Link>
           </div>
@@ -73,14 +73,14 @@ export default function HomePage() {
                   analysis, and drug information powered by advanced machine learning.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <Link href={isAuthenticated ? "/dashboard" : "/auth"}>
+                  <Link href="/dashboard">
                     <Button
                       size="lg"
                       className="relative group bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 text-lg overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                       <span className="relative flex items-center">
-                        {isAuthenticated ? "Go to Dashboard" : "Get Started"}
+                        Go to Dashboard
                         <ArrowRight className="ml-2 w-5 h-5" />
                       </span>
                     </Button>
@@ -242,14 +242,14 @@ export default function HomePage() {
               <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
                 Join thousands of users who trust Revaa for their healthcare needs. Start your journey today.
               </p>
-              <Link href={isAuthenticated ? "/dashboard" : "/auth"}>
+              <Link href="/dashboard">
                 <Button
                   size="lg"
                   className="relative group bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 text-lg overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                   <span className="relative flex items-center">
-                    {isAuthenticated ? "Go to Dashboard" : "Get Started Now"}
+                    Go to Dashboard
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </span>
                 </Button>

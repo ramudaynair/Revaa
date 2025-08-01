@@ -21,14 +21,10 @@ export class GeminiService {
 
   async getMedicalResponse(message: string, language = "en"): Promise<GeminiResponse> {
     try {
-      console.log("=== Gemini API Call Debug ===")
       const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY
-      console.log("API Key available:", !!apiKey)
-      console.log("Message:", message)
-      console.log("Language:", language)
+      console.log("Gemini API - Key available:", !!apiKey, "Message:", message, "Language:", language)
       
       if (!apiKey) {
-        console.error("No Gemini API key found in environment variables")
         throw new Error("Gemini API key not configured")
       }
 
@@ -64,32 +60,26 @@ export class GeminiService {
         contextInfo = `\n\nRelevant condition information:\n- ${topDisease.name}: ${topDisease.description}\n- Common symptoms: ${topDisease.commonSymptoms.join(", ")}\n- Category: ${topDisease.category}`
       }
 
-      const prompt = `You are Dr. Revaa, a friendly and knowledgeable medical assistant. You provide helpful, accurate medical information while always emphasizing the importance of consulting healthcare professionals for proper diagnosis and treatment.
+      const prompt = `You are Dr. Revaa, a medical assistant. You MUST respond ONLY in ${responseLanguage}. Never use English words.
 
 User's message: "${message}"${contextInfo}
 
-Please respond in ${responseLanguage} language. Provide helpful medical information, but always remind users to consult healthcare professionals for proper medical advice. Keep your response concise, friendly, and informative.
+IMPORTANT: Write your ENTIRE response in ${responseLanguage} language. Every word must be in ${responseLanguage}. Provide medical advice in ${responseLanguage} only.`
 
-Important guidelines:
-- Always prioritize user safety
-- Recommend professional medical consultation for serious symptoms
-- Provide general health information, not specific diagnoses
-- Be empathetic and supportive
-- If asked about medications, provide general information but emphasize consulting a doctor or pharmacist
-- Use the context information provided to give more accurate responses`
-
-      console.log("Sending prompt to Gemini...")
       const result = await this.model.generateContent(prompt)
-      console.log("Received result from Gemini")
-      
       const response = await result.response
-      console.log("Got response object")
-      
-      const text = response.text()
-      console.log("Response text length:", text?.length || 0)
+      let text = response.text()
 
       if (!text || text.trim().length === 0) {
         throw new Error("Empty response from Gemini")
+      }
+
+      // Always translate if not English to ensure proper language
+      if (language !== "en") {
+        const translatedText = await this.translateText(text, language)
+        if (translatedText && translatedText.length > 10) {
+          text = translatedText
+        }
       }
 
       return {

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voice Test</title>
+</head>
+<body>
+    <button onclick="testSpeech()">Test Speech Recognition</button>
+    <button onclick="testTTS()">Test Text-to-Speech</button>
+    <div id="result"></div>
+
+    <script>
+        function testSpeech() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                document.getElementById('result').innerHTML = 'Speech recognition not supported';
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            
+            recognition.lang = 'hi-IN';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = function(event) {
+                const result = event.results[0][0].transcript;
+                document.getElementById('result').innerHTML = 'Result: ' + result;
+            };
+
+            recognition.onerror = function(event) {
+                document.getElementById('result').innerHTML = 'Error: ' + event.error;
+            };
+
+            recognition.start();
+        }
+
+        function testTTS() {
+            if (!('speechSynthesis' in window)) {
+                document.getElementById('result').innerHTML = 'Text-to-speech not supported';
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance('नमस्ते, मैं आपकी मदद कर सकता हूं');
+            utterance.lang = 'hi-IN';
+            speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+</html>
