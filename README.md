@@ -99,7 +99,7 @@ Toc H Institute of Science & Technology, Kerala, India
 ## 🏆 Achievements
 
 🥇 **First Place Winner**  
-**Lifosys Digital Systems × AI Innovation Lab × IEEE CS TOCH Pitch Deck Grand Finale (2024)**
+**Lifosys Digital Systems × AI Innovation Lab × IEEE CS TOCH Pitch Deck Grand Finale (2025)**
 
 ---
 
